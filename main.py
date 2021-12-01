@@ -12,6 +12,10 @@ def Butt_comm(): #function that calls the function
     month = mo.get()
     yearofbirth = y.get()
     type = nn.get()
+    if type == "цветной":
+        type = "color"
+    if type == "чёрно-белый":
+        type = "white"
     all = all_years.get()
     splits = all.split()
 
