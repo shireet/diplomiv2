@@ -1,143 +1,76 @@
+from tkinter import *
+from tkinter import ttk
+from find import searcher
 
 
+def Butt_comm(): #function that calls the function
+    global yrs  #getting the values
+    first_name = f.get()
+    middle_name = m.get()
+    last_name = l.get()
+    day = d.get()
+    month = mo.get()
+    yearofbirth = y.get()
+    type = nn.get()
+    all = all_years.get()
+    splits = all.split()
 
-def main():
-
-    from selenium import webdriver
-    import os
-    from selenium.webdriver.chrome.options import Options
-    import time
-    from PyPDF2 import PdfFileMerger
-    import shutil
-
-
-
-
-
-
-    location_project = os.getcwd()  # path to test
-    os.mkdir("temp")
-    folder_dir = location_project + "/temp"  # path to the created file
-
-    chromeOptions = Options()  # adding options to chrome
-    chromeOptions.add_experimental_option("prefs", {
-        "download.default_directory": folder_dir,
-        "download.prompt_for_download": False,
-        "download.directory_upgrade": True,
-        "plugins.always_open_pdf_externally": True,
-        "download.extensions_to_open": "applications/pdf"
-    })
-    #chromeOptions.add_argument("headless")
-    chromeOptions.add_argument("window-size=1,1")
-
-    driver = webdriver.Chrome(location_project + "/chromedriver", options=chromeOptions)
+    value = searcher(splits, last_name, first_name, middle_name, day, month, yearofbirth, type)
+    Label(root, text="Всё!", font=("Arial, 30")).place(x=230, y=400)
+    if value == "error":
+        Label(root, text="Произошла ошибка, убедитесь, что правильно ввели свои данные").place(x=100, y=300)
 
 
+root = Tk()
+root.geometry("600x500")
+
+canvas = Canvas(root, width = 450, height = 500) #ну это картинка)
+canvas.pack()
+img = PhotoImage(file="pic.png")
+canvas.create_image(20,1, anchor=NW, image=img)
+
+#text
+Label(root, text="Чтобы получить дипломы, введите свои данные").place(x=100, y=20)
+Label(root, text="Фамилия").place(x=30, y=60)
+Label(root, text="Имя").place(x=30, y=90)
+Label(root, text="Отчество").place(x=30, y=120)
+Label(root, text="Дата рождения ").place(x=30, y=150)
+Label(root, text="(день/месяц/год)", font=("Arial",10)).place(x=30, y=170)
+Label(root, text="Диплом").place(x=30, y=190)
+Label(root, text="Год диплома").place(x=30, y=220)
+Label(root, text="Введите все годы через пробел", font=("Arial", 10)).place(x=150, y=250)
 
 
+#user input
+
+f = Entry(root, width=15)
+l = Entry(root, width=15)
+m = Entry(root, width=15)
+d = Entry(root, width=3)
+mo = Entry(root, width=3)
+y = Entry(root, width=6)
+
+f.place(x=150, y=90)
+m.place(x=150, y=120)
+l.place(x=150, y=60)
+d.place(x=150, y=150)
+mo.place(x=190, y=150)
+y.place(x=230, y=150)
+
+#type
+nn = StringVar()
+tp = ttk.Combobox(root, width=10, textvariable=nn)
+tp['values'] = ('цветной','чёрно-белый')
+tp.place(x=150, y=190)
+tp.current()
+
+all_years = Entry(root, width=15)
+all_years.place(x=150, y=220)
+
+#execute button
+Buttnstrt = Button(root, text="Найти", padx=40, command=Butt_comm).place(x=200, y=350)
 
 
-    def login(year):
-            driver.get("https://diploma.rsr-olymp.ru/" + year + "/")
-            driver.implicitly_wait(3)
-            try:
-                driver.find_element_by_xpath("/html/body/div[1]/div[2]/div[2]/h2")
-            except:
-                print("Вы указали неверные года")
-                driver.close()
-                shutil.rmtree(folder_dir)
-                main()
+root.mainloop()
 
 
-
-
-
-    def put_info(last_name, first_name, middle_name, day, month, yearofbirth):
-            driver.find_element_by_id("last-name").send_keys(last_name)
-            driver.find_element_by_id("first-name").send_keys(first_name)
-            driver.find_element_by_id("middle-name").send_keys(middle_name)
-            driver.find_element_by_id("bdd").send_keys(day)
-            driver.find_element_by_id("bdm").send_keys(month)
-            driver.find_element_by_id("bdy").send_keys(yearofbirth)
-            driver.find_element_by_xpath("/html/body/div[1]/div[2]/div[3]/input").click()
-            time.sleep(1)
-
-            x = driver.find_element_by_xpath("//*[@id=\"results\"]").text
-            s = len(x)
-            if s < 101:
-                print(x)
-                print("Или у вас нет дипломав за этот год")
-                driver.close()
-                shutil.rmtree(folder_dir)
-                main()
-
-
-
-
-
-    def download(type, o):# download colored or white
-
-            i = 0
-            if type == "color":
-                pdfscolor = driver.find_elements_by_css_selector("a[href$=\"color.pdf\"]")
-                for pdf in pdfscolor:
-
-                    pdf.click()
-                    time.sleep(2)
-                    i += 1
-                return i
-            elif type == "white":
-
-                pdfswhite = driver.find_elements_by_css_selector("a[href$=\"white.pdf\"]")
-                for pdf in pdfswhite:
-                    pdf.click()
-                    time.sleep(2)
-                    i += 1
-                return i
-            if i == 0:
-                print("Не найдены дипломы за "+o+" год")
-
-
-    def wait(count, type):
-        if count == 1:
-            while not os.path.isfile(folder_dir + "/" + type + ".pdf"):
-                time.sleep(2)
-        else:
-            for i in range(1, count):
-                while not os.path.isfile(folder_dir + "/" + type + " " + "(" + str(i) + ").pdf"):
-                        time.sleep(2)
-
-    def pdfmerger(pdflist, type):
-        merger = PdfFileMerger()
-        for item in pdflist:
-            absfile = os.path.join(folder_dir, item)
-            merger.append(absfile)
-        merger.write(location_project+"/_"+type+"_spiski.pdf")
-        merger.close()
-
-
-
-
-    year = {"2020", "2021"} #храним годы дипломов в массиве
-    last_name = "иваненко"
-    first_name = "григорий"
-    middle_name = "александрович"
-    day = "3"
-    month = "11"
-    yearofbirth = "2003"
-    type = "color"
-
-    for o in year: #цикл скачиваюшая пдф указанных годов
-        login(o)
-        put_info(last_name, first_name, middle_name, day, month, yearofbirth)
-        count = download(type, o)
-        sumcount = 0
-        sumcount += count
-        wait(sumcount, type)
-
-        pdflist = os.listdir(folder_dir)
-
-    pdfmerger(pdflist, type) #merge all pdfs
-    shutil.rmtree(folder_dir)#delete temp
-    driver.close()#end
-main()
